@@ -30,6 +30,7 @@ public class TileMap : MonoBehaviour
     public Vector3Int firstSpawnLocation;
 
     public List<Vector3Int> goals = new List<Vector3Int> {};
+    public List<Vector3Int> activeGoals = new List<Vector3Int> {};
     public List<Vector3Int> spawns = new List<Vector3Int> {};
     //order matters
     public List<TileBase> goalTiles = new List<TileBase> {};
@@ -37,7 +38,7 @@ public class TileMap : MonoBehaviour
 
     void Start ()
     {
-        // stepHistory[currentStage].Add(player);
+        stepHistory[currentStage].Add(player);
         tilemap = GetComponent<Tilemap>();
         // cloneSprite = GetComponent<Tilemap>();
         //connect actions
@@ -88,8 +89,8 @@ public class TileMap : MonoBehaviour
             {
                 if (player == goals[i]) {
                     print("goal reached");
-                    Spawn();
-                    GoalReached?.Invoke();
+                    DoSomethingWithTheGoal(goals[i]);
+                    // GoalReached?.Invoke();
                     break;
                 }
             }
@@ -151,18 +152,25 @@ public class TileMap : MonoBehaviour
 
         //sort lists
         
-
+        spawnsTemp.Add(firstSpawn);
         for (int i = 0; i < goalsUnsorted.Count(); i++)
         {
             // goalsTemp.Add(tileArray[goals[i].x + goals[i].y * bounds.size.x])
             // goalsSorted.Add(goalTiles.IndexOf(tileArray[goals[i].x + goals[i].y * bounds.size.x]));
 
             goals.Add(goalsUnsorted[goalsTemp.IndexOf(goalTiles[i])]);
+        }
+        for (int i = 0; i < spawnsUnsorted.Count(); i++)
+        {
             spawns.Add(spawnsUnsorted[spawnsTemp.IndexOf(spawnTiles[i])]);
 
-            print(goals[i]);
+            print(spawns[i]);
+            print("spawn ghdfjkaghkj");
             print(i);
         }
+        // activeGoals.AddRange(goals);
+        activeGoals = goals.ToList();
+        print(activeGoals.Count());
         // goals = goals.OrderBy(x => goals.FindIndex(x)).ToList();
     }
 
@@ -216,14 +224,29 @@ public class TileMap : MonoBehaviour
 
     void OnGoalReached ()
     {
+
         CreateClone(currentStage);
         IncreaseStage();
     }
 
+    void DoSomethingWithTheGoal (Vector3Int goal)
+    {
+        print(activeGoals[0]);
+        if (activeGoals.Contains(goal))
+        {
+            stepHistory[currentStage].RemoveAt(stepHistory[currentStage].Count - 1);
+            Spawn();
+            GoalReached?.Invoke();
+        }
+    }
+
     void Spawn ()
     {
-        if (goalTiles[currentStage] != null)
-        {}
+        print("spawning player");
+        if (spawns[currentStage] != null)
+        {
+            player = spawns[currentStage];
+        }
     }
 }
 
