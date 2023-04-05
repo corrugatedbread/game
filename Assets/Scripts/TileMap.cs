@@ -84,7 +84,7 @@ public class TileMap : MonoBehaviour
         //runs after clones are all updated
         if (checkPlayer)
         {
-            print("checking");
+            // print("checking");
             for (int i = 0; i < goals.Count; i++)
             {
                 if (player == goals[i]) {
@@ -206,7 +206,7 @@ public class TileMap : MonoBehaviour
 
         currentStage += 1;
         stepHistory.Add(new List<Vector3Int> {});
-        print(stepHistory[1]);
+        print(stepHistory[currentStage]);
 
         stepHistory[currentStage].Add(player);
     }
@@ -224,7 +224,7 @@ public class TileMap : MonoBehaviour
 
     void OnGoalReached ()
     {
-
+        print("on goal reached");
         CreateClone(currentStage);
         IncreaseStage();
     }
@@ -232,21 +232,32 @@ public class TileMap : MonoBehaviour
     void DoSomethingWithTheGoal (Vector3Int goal)
     {
         print(activeGoals[0]);
+        print(currentStage);
+        print(stepHistory);
         if (activeGoals.Contains(goal))
         {
-            stepHistory[currentStage].RemoveAt(stepHistory[currentStage].Count - 1);
-            Spawn();
-            GoalReached?.Invoke();
+            if (currentStage == goals.Count() - 1)
+            {
+                print("you win");
+            } else
+            {
+                stepHistory[currentStage].RemoveAt(stepHistory[currentStage].Count - 1);
+                Spawn();
+                // currentStage += 1;
+                GoalReached?.Invoke();
+
+                activeGoals.Remove(goal);
+            }
         }
     }
 
     void Spawn ()
     {
         print("spawning player");
-        if (spawns[currentStage] != null)
-        {
-            player = spawns[currentStage];
-        }
+        // if (spawns[currentStage] != null)
+        // {
+        player = spawns[currentStage];
+        // }
     }
 }
 

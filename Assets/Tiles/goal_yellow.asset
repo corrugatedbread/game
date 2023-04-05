@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: goal_yellow
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: 21300000, guid: e8d489c558d1be046bd881d533f7d941, type: 3}
-  m_Color: {r: 0.8867924, g: 0.83600026, b: 0.15393375, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 79976b5c82a826f42af7515078796fb8, type: 3}
+  m_Color: {r: 1, g: 0.9687822, b: 0.5509434, a: 1}
   m_Transform:
     e00: 1
     e01: 0
