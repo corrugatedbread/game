@@ -7,7 +7,8 @@ using System;
 
 public class TileMap : MonoBehaviour
 {
-    public Vector3Int player = new Vector3Int(0,0,0);
+    //spaghetti
+    public Vector3Int playerLocation = new Vector3Int(0,0,0);
     public Tilemap tilemap = null;
     // public Object cloneSprite = null;
     public GameObject cloneSprite;
@@ -17,13 +18,16 @@ public class TileMap : MonoBehaviour
     public int currentStage = 0;
 
     public List<GameObject> clones = new List<GameObject> {};
+    public List<Vector3Int> clonesLocation = new List<Vector3Int> {};
+
     public List<List<Vector3Int>> stepHistory = new List<List<Vector3Int>> {new List<Vector3Int> {}};
-    // stepHistory[0] = List<Vector3Int> {player};
+    // stepHistory[0] = List<Vector3Int> {playerLocation};
 
     public event Action GoalReached;
     
     public bool checkPlayer = false;
     public event Action PlayerMoved;
+    public event Action Ready;
 
     public TileBase goalRed;
     public TileBase firstSpawn;
@@ -32,13 +36,13 @@ public class TileMap : MonoBehaviour
     public List<Vector3Int> goals = new List<Vector3Int> {};
     public List<Vector3Int> activeGoals = new List<Vector3Int> {};
     public List<Vector3Int> spawns = new List<Vector3Int> {};
+    public List<Vector3Int> activeSpawns = new List<Vector3Int> {};
     //order matters
     public List<TileBase> goalTiles = new List<TileBase> {};
     public List<TileBase> spawnTiles = new List<TileBase> {};
 
     void Start ()
     {
-        stepHistory[currentStage].Add(player);
         tilemap = GetComponent<Tilemap>();
         // cloneSprite = GetComponent<Tilemap>();
         //connect actions
@@ -47,12 +51,10 @@ public class TileMap : MonoBehaviour
 
         LoadTiles();
         
-        if (firstSpawnLocation != null)
-        {
-            player = firstSpawnLocation;
-            print("first spawn");
-        }
-
+        playerLocation = firstSpawnLocation;
+        stepHistory[currentStage].Add(playerLocation);
+        // print("first spawn");
+        Ready?.Invoke();
     }
 
     void Update()
@@ -85,9 +87,15 @@ public class TileMap : MonoBehaviour
         if (checkPlayer)
         {
             // print("checking");
+            if (clonesLocation.Contains(playerLocation))
+            {
+                print("you are very much very dead");
+                return;
+            }
+            clonesLocation.Clear();
             for (int i = 0; i < goals.Count; i++)
             {
-                if (player == goals[i]) {
+                if (playerLocation == goals[i]) {
                     print("goal reached");
                     DoSomethingWithTheGoal(goals[i]);
                     // GoalReached?.Invoke();
@@ -129,16 +137,18 @@ public class TileMap : MonoBehaviour
                     print("goal found");
                     // print(goals[0]);
 
+                } else if (tile == firstSpawn)
+                {
+                    firstSpawnLocation = new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0);
+                    // spawnsUnsorted.Add(new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0));
+                    // spawnsTemp.Add(tile);
+                    print("first spawn found");
                 } else if (spawnTiles.Contains(tile))
                 {
                     spawnsUnsorted.Add(new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0));
                     spawnsTemp.Add(tile);
                     // spawns[spawnTiles.IndexOf(tile)] = new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0);
                     print("spawn found");
-                } else if (tile == firstSpawn)
-                {
-                    firstSpawnLocation = new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0);
-                    print("first spawn found");
                 } else if (tile != null)
                 {
                     Debug.Log(x + "," + y + " " + tile.name);
@@ -170,6 +180,8 @@ public class TileMap : MonoBehaviour
         }
         // activeGoals.AddRange(goals);
         activeGoals = goals.ToList();
+        activeSpawns = spawns.ToList();
+        activeSpawns.Remove(firstSpawn);
         print(activeGoals.Count());
         // goals = goals.OrderBy(x => goals.FindIndex(x)).ToList();
     }
@@ -177,12 +189,14 @@ public class TileMap : MonoBehaviour
 
     void MovePlayer (Vector3Int direction)
     {
-        if (tilemap.GetTile(player + direction) == null || goalTiles.Contains(tilemap.GetTile(player + direction)))
+        TileBase tile = tilemap.GetTile(playerLocation + direction);
+        if (tile == null | tile == firstSpawn | goalTiles.Contains(tile) | spawnTiles.Contains(tile))
+        // if (tilemap.GetTile(playerLocation + direction) == null || goalTiles.Contains(tilemap.GetTile(playerLocation + direction)))
         {
             currentSteps += 1;
-            player = player + direction;
+            playerLocation = playerLocation + direction;
             // print(stepHistory[currentStage]);
-            stepHistory[currentStage].Add(player);
+            stepHistory[currentStage].Add(playerLocation);
             print(stepHistory[currentStage][currentSteps - 1]);
 
             PlayerMoved?.Invoke();
@@ -208,7 +222,7 @@ public class TileMap : MonoBehaviour
         stepHistory.Add(new List<Vector3Int> {});
         print(stepHistory[currentStage]);
 
-        stepHistory[currentStage].Add(player);
+        stepHistory[currentStage].Add(playerLocation);
     }
 
     void MoveClone ()
@@ -225,8 +239,6 @@ public class TileMap : MonoBehaviour
     void OnGoalReached ()
     {
         print("on goal reached");
-        CreateClone(currentStage);
-        IncreaseStage();
     }
 
     void DoSomethingWithTheGoal (Vector3Int goal)
@@ -239,24 +251,33 @@ public class TileMap : MonoBehaviour
             if (currentStage == goals.Count() - 1)
             {
                 print("you win");
+            } else if (activeSpawns.IndexOf(spawns[goals.IndexOf(goal)]) == -1) // if there is a corresponding spawn to the goal in activeSpawns
+            {
+                return;
             } else
             {
+                //remove goal from steps
                 stepHistory[currentStage].RemoveAt(stepHistory[currentStage].Count - 1);
                 Spawn();
                 // currentStage += 1;
                 GoalReached?.Invoke();
+                CreateClone(currentStage);
+                IncreaseStage();
 
                 activeGoals.Remove(goal);
+                activeSpawns.Remove(spawns[goals.IndexOf(goal)]);
+                // PlayerMoved?.Invoke();
             }
         }
     }
 
     void Spawn ()
     {
-        print("spawning player");
+        print("spawning playerLocation");
         // if (spawns[currentStage] != null)
         // {
-        player = spawns[currentStage];
+        playerLocation = spawns[currentStage];
+        // PlayerMoved?.Invoke();
         // }
     }
 }

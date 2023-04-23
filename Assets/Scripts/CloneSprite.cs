@@ -9,21 +9,30 @@ public class CloneSprite : MonoBehaviour
     public Component script;
     public bool active = true;
     public int stage = 0;
+    public Vector3Int location = new Vector3Int(0, 0, 0);
+    Vector3 oldLocation = new Vector3(0, 0, 0);
     // Start is called before the first frame update
     void Start()
     {
         //doesn't work for whatever reason
         Component script = tilemap.GetComponent<TileMap>();
-        
-    }
-
-    void Awake()
-    {
         if (tilemap != null && active)
         {
             print("connect");
             tilemap.GetComponent<TileMap>().PlayerMoved += OnPlayerMoved;
         }
+
+        // if (active)
+        // {
+        //     print("active");
+        //     Activate();
+        // }
+    }
+
+    void Awake()
+    {
+        //idk why this is in Awake instead of Start
+        
     }
 
     // Update is called once per frame
@@ -37,6 +46,12 @@ public class CloneSprite : MonoBehaviour
         active = true;
         print("connect");
         tilemap.GetComponent<TileMap>().PlayerMoved += OnPlayerMoved;
+
+        Vector3Int location = tilemap.GetComponent<TileMap>().stepHistory[stage][0];
+        print(location);
+        tilemap.GetComponent<TileMap>().clonesLocation.Add(location);
+        transform.position = location + new Vector3(0.5f,0.5f,0);
+        oldLocation = location;
     }
 
     void OnPlayerMoved()
@@ -51,7 +66,7 @@ public class CloneSprite : MonoBehaviour
         print("stage: " + stage);
         if (tilemap.GetComponent<TileMap>().currentSteps >= tilemap.GetComponent<TileMap>().stepHistory[stage].Count)
         {
-            if (tilemap.GetComponent<TileMap>().stepHistory[1] != null)
+            if (tilemap.GetComponent<TileMap>().stepHistory[stage + 1] != null)
             {
                 tilemap.GetComponent<TileMap>().PlayerMoved -= OnPlayerMoved;
                 Destroy(gameObject);
@@ -59,8 +74,22 @@ public class CloneSprite : MonoBehaviour
             return;
         }
         print("clone moveeee");
-        Vector3 location = tilemap.GetComponent<TileMap>().stepHistory[stage][tilemap.GetComponent<TileMap>().currentSteps];
+        //move
+        location = tilemap.GetComponent<TileMap>().stepHistory[stage][tilemap.GetComponent<TileMap>().currentSteps];
         print(location);
-        transform.position = location + new Vector3(0.5f,0.5f,0);
+        tilemap.GetComponent<TileMap>().clonesLocation.Add(location);
+        StartCoroutine(Animate());
+        // transform.position = location + new Vector3(0.5f,0.5f,0);
     }
+
+    IEnumerator Animate()
+    {
+        for (float t = 0f; t < 1f; t += 0.05f)
+        {
+            transform.position = Vector3.Lerp(oldLocation, location, t) + new Vector3(0.5f,0.5f,0);
+            yield return null;
+        }
+        oldLocation = location;
+    }
+
 }
