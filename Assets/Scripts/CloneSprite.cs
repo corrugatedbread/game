@@ -91,7 +91,7 @@ public class CloneSprite : MonoBehaviour
         oldLocation = location;
     }
 
-    void StopExisting() {
+    public void StopExisting() {
         tilemap.GetComponent<TileMap>().PlayerMoved -= OnPlayerMoved;
         tilemap.GetComponent<TileMap>().clones.Remove(gameObject);
         

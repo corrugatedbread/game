@@ -325,6 +325,7 @@ public class TileMap : MonoBehaviour
         print(activeGoals[0]);
         print(currentStage);
         print(stepHistory);
+        checkPlayer = false;
         if (activeGoals.Contains(goal))
         {
             if (currentStage == goals.Count() - 1)
@@ -342,7 +343,12 @@ public class TileMap : MonoBehaviour
                 Spawn();
                 // currentStage += 1;
                 GoalReached?.Invoke();
+                while (clones.Count() != 0)
+                {
+                    clones[0].GetComponent<CloneSprite>().StopExisting();
+                }
                 clones.Clear();
+
                 for (int i = 0; i <= currentStage; i++)
                 {
                     CreateClone(i);
@@ -351,6 +357,7 @@ public class TileMap : MonoBehaviour
                 IncreaseStage();
 
                 activeGoals.Remove(goal);
+                checkPlayer = true;
                 // activeSpawns.Remove(spawns[goals.IndexOf(goal)]);
                 // PlayerMoved?.Invoke();
             }
