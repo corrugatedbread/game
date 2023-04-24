@@ -8,10 +8,12 @@ using System;
 public class TileMap : MonoBehaviour
 {
     //spaghetti
+    public bool doStuff = true;
     public Vector3Int playerLocation = new Vector3Int(0,0,0);
     public Tilemap tilemap = null;
     // public Object cloneSprite = null;
     public GameObject cloneSprite;
+    public GameObject JsonReader;
 
     public int totalSteps = 0;
     public int currentSteps = 0;
@@ -31,6 +33,7 @@ public class TileMap : MonoBehaviour
 
     public TileBase goalRed;
     public TileBase firstSpawn;
+    public TileBase wallTile;
     public Vector3Int firstSpawnLocation;
 
     public List<Vector3Int> goals = new List<Vector3Int> {};
@@ -49,6 +52,7 @@ public class TileMap : MonoBehaviour
         tilemap.GetComponent<TileMap>().PlayerMoved += OnPlayerMoved;
         tilemap.GetComponent<TileMap>().GoalReached += OnGoalReached;
 
+        SetTiles(1);
         LoadTiles();
         
         playerLocation = firstSpawnLocation;
@@ -59,6 +63,10 @@ public class TileMap : MonoBehaviour
 
     void Update()
     {
+        if (doStuff == false)
+        {
+            return;
+        }
         Vector3Int direction = new Vector3Int(0,0,0);
         if (Input.GetKeyDown("a"))
         {
@@ -83,16 +91,14 @@ public class TileMap : MonoBehaviour
 
     void LateUpdate()
     {
+        if (doStuff == false)
+        {
+            return;
+        }
         //runs after clones are all updated
         if (checkPlayer)
         {
             // print("checking");
-            if (clonesLocation.Contains(playerLocation))
-            {
-                print("you are very much very dead");
-                return;
-            }
-            clonesLocation.Clear();
             for (int i = 0; i < goals.Count; i++)
             {
                 if (playerLocation == goals[i]) {
@@ -102,12 +108,84 @@ public class TileMap : MonoBehaviour
                     break;
                 }
             }
+            if (clonesLocation.Contains(playerLocation))
+            {
+                print("you are very much very dead");
+                doStuff = false;
+                return;
+            }
+            clonesLocation.Clear();
+            if (currentStage != 0 && clones.Count() == 0)
+            {
+                print("you ran out of time");
+                doStuff = false;
+                return;
+            }
             checkPlayer = false;
         }
     }
 
+    void SetTiles (int levelIndex)
+    {
+        List<TileBase> tiles = new List<TileBase> {};
+        tilemap.ClearAllTiles();
+        int width = JsonReader.GetComponent<JsonReader>().json.levels[levelIndex].width;
+        int height = JsonReader.GetComponent<JsonReader>().json.levels[levelIndex].height;
+
+        foreach (int i in JsonReader.GetComponent<JsonReader>().json.levels[levelIndex].tiles)
+        {
+            //there's probably a much better way of doing this but i'm lazy
+            if (i == 0)
+            {
+                tiles.Add(null);
+            } else if (i == 1)
+            {
+                tiles.Add(wallTile);
+            } else if (i == 100)
+            {
+                tiles.Add(firstSpawn);
+            } else if (i == 101)
+            {
+                tiles.Add(spawnTiles[0]);
+            } else if (i == 102)
+            {
+                tiles.Add(spawnTiles[1]);
+            } else if (i == 103)
+            {
+                tiles.Add(spawnTiles[2]);
+            } else if (i == 104)
+            {
+                tiles.Add(spawnTiles[3]);
+            } else if (i == 201)
+            {
+                tiles.Add(goalTiles[0]);
+            } else if (i == 202)
+            {
+                tiles.Add(goalTiles[1]);
+            } else if (i == 203)
+            {
+                tiles.Add(goalTiles[2]);
+            } else if (i == 204)
+            {
+                tiles.Add(goalTiles[3]);
+            } else
+            {
+                tiles.Add(null);
+            }
+            print(tiles[tiles.Count() - 1]);
+
+            tilemap.SetTile(new Vector3Int((tiles.Count() - 1) % width, (tiles.Count() - 1 - ((tiles.Count() - 1) % width)) / width) ,tiles[tiles.Count() - 1]);
+        }
+
+    
+    }
+
     void LoadTiles ()
     {
+        spawns.Clear();
+        goals.Clear();
+        // firstSpawnLocation;
+
         BoundsInt bounds = tilemap.cellBounds;
         TileBase[] tileArray = tilemap.GetTilesBlock(bounds);
         List<TileBase> goalsTemp = new List<TileBase> {};
@@ -180,8 +258,8 @@ public class TileMap : MonoBehaviour
         }
         // activeGoals.AddRange(goals);
         activeGoals = goals.ToList();
-        activeSpawns = spawns.ToList();
-        activeSpawns.Remove(firstSpawn);
+        // activeSpawns = spawns.ToList();
+        // activeSpawns.Remove(firstSpawn);
         print(activeGoals.Count());
         // goals = goals.OrderBy(x => goals.FindIndex(x)).ToList();
     }
@@ -208,10 +286,10 @@ public class TileMap : MonoBehaviour
 
         print("why");
         // clones[currentStage];
-        clones.Add(Instantiate(cloneSprite));
-        clones[currentStage].GetComponent<CloneSprite>().Activate();
-        clones[currentStage].GetComponent<CloneSprite>().stage = cloneStage;
-        
+        GameObject cloneThing = Instantiate(cloneSprite);
+        cloneThing.GetComponent<CloneSprite>().stage = cloneStage;
+        cloneThing.GetComponent<CloneSprite>().Activate();
+        clones.Add(cloneThing);
     }
 
     void IncreaseStage () {
@@ -223,6 +301,7 @@ public class TileMap : MonoBehaviour
         print(stepHistory[currentStage]);
 
         stepHistory[currentStage].Add(playerLocation);
+        print("spawn location " + playerLocation + stepHistory[currentStage][0]);
     }
 
     void MoveClone ()
@@ -251,21 +330,28 @@ public class TileMap : MonoBehaviour
             if (currentStage == goals.Count() - 1)
             {
                 print("you win");
-            } else if (activeSpawns.IndexOf(spawns[goals.IndexOf(goal)]) == -1) // if there is a corresponding spawn to the goal in activeSpawns
+                doStuff = false;
+            } else if (goal != activeGoals[0]) // if there is a corresponding spawn to the goal in activeSpawns
             {
                 return;
             } else
             {
                 //remove goal from steps
                 stepHistory[currentStage].RemoveAt(stepHistory[currentStage].Count - 1);
+                // currentSteps -= 1;
                 Spawn();
                 // currentStage += 1;
                 GoalReached?.Invoke();
-                CreateClone(currentStage);
+                clones.Clear();
+                for (int i = 0; i <= currentStage; i++)
+                {
+                    CreateClone(i);
+                }
+                // CreateClone(currentStage);
                 IncreaseStage();
 
                 activeGoals.Remove(goal);
-                activeSpawns.Remove(spawns[goals.IndexOf(goal)]);
+                // activeSpawns.Remove(spawns[goals.IndexOf(goal)]);
                 // PlayerMoved?.Invoke();
             }
         }

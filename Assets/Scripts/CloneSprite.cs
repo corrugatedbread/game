@@ -15,12 +15,12 @@ public class CloneSprite : MonoBehaviour
     void Start()
     {
         //doesn't work for whatever reason
-        Component script = tilemap.GetComponent<TileMap>();
-        if (tilemap != null && active)
-        {
-            print("connect");
-            tilemap.GetComponent<TileMap>().PlayerMoved += OnPlayerMoved;
-        }
+        // Component script = tilemap.GetComponent<TileMap>();
+        // if (tilemap != null && active)
+        // {
+        //     print("connect");
+        //     tilemap.GetComponent<TileMap>().PlayerMoved += OnPlayerMoved;
+        // }
 
         // if (active)
         // {
@@ -47,7 +47,7 @@ public class CloneSprite : MonoBehaviour
         print("connect");
         tilemap.GetComponent<TileMap>().PlayerMoved += OnPlayerMoved;
 
-        Vector3Int location = tilemap.GetComponent<TileMap>().stepHistory[stage][0];
+        location = tilemap.GetComponent<TileMap>().stepHistory[stage][0];
         print(location);
         tilemap.GetComponent<TileMap>().clonesLocation.Add(location);
         transform.position = location + new Vector3(0.5f,0.5f,0);
@@ -68,8 +68,7 @@ public class CloneSprite : MonoBehaviour
         {
             if (tilemap.GetComponent<TileMap>().stepHistory[stage + 1] != null)
             {
-                tilemap.GetComponent<TileMap>().PlayerMoved -= OnPlayerMoved;
-                Destroy(gameObject);
+                StopExisting();
             }
             return;
         }
@@ -91,5 +90,13 @@ public class CloneSprite : MonoBehaviour
         }
         oldLocation = location;
     }
+
+    void StopExisting() {
+        tilemap.GetComponent<TileMap>().PlayerMoved -= OnPlayerMoved;
+        tilemap.GetComponent<TileMap>().clones.Remove(gameObject);
+        
+        Destroy(gameObject);
+    }
+
 
 }
