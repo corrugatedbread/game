@@ -5,8 +5,8 @@ using UnityEngine.Tilemaps;
 
 public class Player : MonoBehaviour
 {
-    Vector3 location = new Vector3(0, 0, 0);
-    Vector3 oldLocation = new Vector3(0, 0, 0);
+    public Vector3 location = new Vector3(0, 0, 0);
+    public Vector3 oldLocation = new Vector3(0, 0, 0);
     public GameObject tilemap;
     public Coroutine idk;
     // Start is called before the first frame update
@@ -14,6 +14,7 @@ public class Player : MonoBehaviour
     {
         tilemap.GetComponent<TileMap>().PlayerMoved += OnPlayerMoved;
         tilemap.GetComponent<TileMap>().Ready += OnReady;
+        tilemap.GetComponent<TileMap>().Reset += Reset;
         tilemap.GetComponent<TileMap>().GoalReached += OnGoalReached;
     }
 
@@ -34,11 +35,18 @@ public class Player : MonoBehaviour
 
     void OnReady()
     {
+        Reset();
+    }
+
+    public void Reset()
+    {
+        StopAllCoroutines();
         oldLocation = tilemap.GetComponent<TileMap>().playerLocation;
+        location = tilemap.GetComponent<TileMap>().playerLocation;
         transform.position = tilemap.GetComponent<TileMap>().playerLocation + new Vector3(0.5f,0.5f,0);
     }
 
-    IEnumerator Animate()
+    public IEnumerator Animate()
     {
         for (float t = 0f; t < 1f; t += 0.05f)
         {

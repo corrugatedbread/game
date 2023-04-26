@@ -74,6 +74,8 @@ public class Levels : MonoBehaviour
     public void OnClick(GameObject e)
     {
         print(e.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text);
+        Persistent.levelIndex = int.Parse(e.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text);
+        SceneManager.LoadScene("Game");
         print("clicked");
     }
 

@@ -4,11 +4,14 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Linq;
 using System;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 
 public class TileMap : MonoBehaviour
 {
     //spaghetti
-    public bool doStuff = true;
+    public bool doStuff = false;
     public Vector3Int playerLocation = new Vector3Int(0,0,0);
     public Tilemap tilemap = null;
     // public Object cloneSprite = null;
@@ -30,6 +33,7 @@ public class TileMap : MonoBehaviour
     public bool checkPlayer = false;
     public event Action PlayerMoved;
     public event Action Ready;
+    public event Action Reset;
 
     public TileBase goalRed;
     public TileBase firstSpawn;
@@ -52,11 +56,10 @@ public class TileMap : MonoBehaviour
         tilemap.GetComponent<TileMap>().PlayerMoved += OnPlayerMoved;
         tilemap.GetComponent<TileMap>().GoalReached += OnGoalReached;
 
-        SetTiles(1);
+        SetMessage("");
+        SetTiles(Persistent.levelIndex);
         LoadTiles();
-        
-        playerLocation = firstSpawnLocation;
-        stepHistory[currentStage].Add(playerLocation);
+        doStuff = true;
         // print("first spawn");
         Ready?.Invoke();
     }
@@ -112,6 +115,7 @@ public class TileMap : MonoBehaviour
             if (clonesLocation.Contains(playerLocation))
             {
                 print("you are very much very dead");
+                SetMessage("You died!");
                 doStuff = false;
                 return;
             }
@@ -119,6 +123,7 @@ public class TileMap : MonoBehaviour
             if (currentStage != 0 && clones.Count() == 0)
             {
                 print("you ran out of time");
+                SetMessage("You ran out of time!");
                 doStuff = false;
                 return;
             }
@@ -128,6 +133,23 @@ public class TileMap : MonoBehaviour
 
     void SetTiles (int levelIndex)
     {
+        doStuff = false;
+        while (clones.Count() != 0)
+        {
+            clones[0].GetComponent<CloneSprite>().StopExisting();
+        }
+        clones.Clear();
+
+        totalSteps = 0;
+        currentSteps = 0;
+        currentStage = 0;
+
+        clones = new List<GameObject> {};
+        clonesLocation = new List<Vector3Int> {};
+
+        stepHistory = new List<List<Vector3Int>> {new List<Vector3Int> {}};
+        playerLocation = new Vector3Int(0,0,0);
+        
         List<TileBase> tiles = new List<TileBase> {};
         tilemap.ClearAllTiles();
         int width = JsonReader.GetComponent<JsonReader>().json.levels[levelIndex].width;
@@ -177,8 +199,8 @@ public class TileMap : MonoBehaviour
 
             tilemap.SetTile(new Vector3Int((tiles.Count() - 1) % width, (int)((tiles.Count() - 1) / width), 0), tiles[tiles.Count() - 1]);
         }
-
-    
+        
+        doStuff = true;
     }
 
     void LoadTiles ()
@@ -257,12 +279,16 @@ public class TileMap : MonoBehaviour
             print("spawn ghdfjkaghkj");
             print(i);
         }
+        playerLocation = firstSpawnLocation;
+        stepHistory[currentStage].Add(playerLocation);
+        Reset?.Invoke();
         // activeGoals.AddRange(goals);
         activeGoals = goals.ToList();
         // activeSpawns = spawns.ToList();
         // activeSpawns.Remove(firstSpawn);
         print(activeGoals.Count());
         // goals = goals.OrderBy(x => goals.FindIndex(x)).ToList();
+        doStuff = true;
     }
 
 
@@ -332,7 +358,9 @@ public class TileMap : MonoBehaviour
             if (currentStage == goals.Count() - 1)
             {
                 print("you win");
+                SetMessage("You win!");
                 doStuff = false;
+                
             } else if (goal != activeGoals[0]) // if there is a corresponding spawn to the goal in activeSpawns
             {
                 return;
@@ -373,6 +401,36 @@ public class TileMap : MonoBehaviour
         playerLocation = spawns[currentStage];
         // PlayerMoved?.Invoke();
         // }
+    }
+
+    public void NextLevel()
+    {
+        if (JsonReader.GetComponent<JsonReader>().json.levels.Length > Persistent.levelIndex)
+        {
+            SetMessage("");
+            Persistent.levelIndex += 1;
+            // doStuff = false;
+            SetTiles(Persistent.levelIndex);
+            LoadTiles();
+            // doStuff = true;
+        }
+    }
+
+    public void Menu()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    public void Retry()
+    {
+        SetMessage("");
+        SetTiles(Persistent.levelIndex);
+        LoadTiles();
+    }
+
+    public void SetMessage(string message)
+    {
+        GameObject.Find("Message").GetComponent<TextMeshProUGUI>().text = message;
     }
 }
 
