@@ -68,23 +68,24 @@ public class TileMap : MonoBehaviour
             return;
         }
         Vector3Int direction = new Vector3Int(0,0,0);
-        if (Input.GetKeyDown("a"))
+        if (Input.GetKeyDown("a") || Input.GetKeyDown(KeyCode.LeftArrow))
         {
             MovePlayer(new Vector3Int(-1,0,0));
-        } else if (Input.GetKeyDown("d"))
+        } else if (Input.GetKeyDown("d") || Input.GetKeyDown(KeyCode.RightArrow))
         {
             MovePlayer(new Vector3Int(1,0,0));
-        } else if (Input.GetKeyDown("w"))
+        } else if (Input.GetKeyDown("w") || Input.GetKeyDown(KeyCode.UpArrow))
         {
             MovePlayer(new Vector3Int(0,1,0));
-        } else if (Input.GetKeyDown("s"))
+        } else if (Input.GetKeyDown("s") || Input.GetKeyDown(KeyCode.DownArrow))
         {
             MovePlayer(new Vector3Int(0,-1,0));
-        } else if (Input.GetKeyDown("r"))
-        {
-            CreateClone(currentStage);
-            IncreaseStage();
         }
+        // } else if (Input.GetKeyDown("r") || Input.GetKeyDown(KeyCode.RightArrow))
+        // {
+        //     CreateClone(currentStage);
+        //     IncreaseStage();
+        // }
 
         // MovePlayer(direction);
     }
@@ -174,7 +175,7 @@ public class TileMap : MonoBehaviour
             }
             print(tiles[tiles.Count() - 1]);
 
-            tilemap.SetTile(new Vector3Int((tiles.Count() - 1) % width, (tiles.Count() - 1 - ((tiles.Count() - 1) % width)) / width) ,tiles[tiles.Count() - 1]);
+            tilemap.SetTile(new Vector3Int((tiles.Count() - 1) % width, (int)((tiles.Count() - 1) / width), 0), tiles[tiles.Count() - 1]);
         }
 
     
