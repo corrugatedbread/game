@@ -45,7 +45,7 @@ public class Levels : MonoBehaviour
         //     Debug.Log("Button was pressed!");
         // };
 
-        for (int i = 0; i < 40; i++)
+        for (int i = 0; i < levelCount; i++)
         {
             
             // new Vector3(70 * (i % row), 70 * Mathf.Floor(i / row), 0) + offset
@@ -60,6 +60,7 @@ public class Levels : MonoBehaviour
             transform.anchoredPosition = new Vector2(buttonWidth * (i % row) + offset.x, (-buttonHeight) * Mathf.Floor(i / row) + offset.y);
             // cSharpIsDumb.text = i;
             b.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text = i.ToString();
+            b.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text += "\n" + JsonReader.GetComponent<JsonReader>().json.levels[i].name;
             // cSharpIsDumb.onClick += OnClick;
 
             // cSharpIsDumb.clicked += () =>
@@ -74,7 +75,8 @@ public class Levels : MonoBehaviour
     public void OnClick(GameObject e)
     {
         print(e.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text);
-        Persistent.levelIndex = int.Parse(e.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text);
+        // very scuffed
+        Persistent.levelIndex = int.Parse(e.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text.Split("\n")[0]);
         SceneManager.LoadScene("Game");
         print("clicked");
     }

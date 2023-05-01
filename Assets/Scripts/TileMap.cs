@@ -35,7 +35,7 @@ public class TileMap : MonoBehaviour
     public event Action Ready;
     public event Action Reset;
 
-    public TileBase goalRed;
+    // public TileBase goalRed;
     public TileBase firstSpawn;
     public TileBase wallTile;
     public Vector3Int firstSpawnLocation;
@@ -47,6 +47,7 @@ public class TileMap : MonoBehaviour
     //order matters
     public List<TileBase> goalTiles = new List<TileBase> {};
     public List<TileBase> spawnTiles = new List<TileBase> {};
+    public List<Color> colors = new List<Color> { };
 
     void Start ()
     {
@@ -107,8 +108,12 @@ public class TileMap : MonoBehaviour
             {
                 if (playerLocation == goals[i]) {
                     print("goal reached");
-                    DoSomethingWithTheGoal(goals[i]);
+                    bool youActuallyReachedAnActiveGoalAndTheGameShouldntAnnoyYouByPrintingThatYouRanOutOfTime = DoSomethingWithTheGoal(goals[i]);
                     // GoalReached?.Invoke();
+                    if (youActuallyReachedAnActiveGoalAndTheGameShouldntAnnoyYouByPrintingThatYouRanOutOfTime)
+                    {
+                        return;
+                    }
                     break;
                 }
             }
@@ -347,7 +352,7 @@ public class TileMap : MonoBehaviour
         print("on goal reached");
     }
 
-    void DoSomethingWithTheGoal (Vector3Int goal)
+    bool DoSomethingWithTheGoal (Vector3Int goal)
     {
         print(activeGoals[0]);
         print(currentStage);
@@ -360,10 +365,11 @@ public class TileMap : MonoBehaviour
                 print("you win");
                 SetMessage("You win!");
                 doStuff = false;
+                return true;
                 
-            } else if (goal != activeGoals[0]) // if there is a corresponding spawn to the goal in activeSpawns
+            } else if (goal != activeGoals[0])
             {
-                return;
+                return false;
             } else
             {
                 //remove goal from steps
@@ -389,8 +395,10 @@ public class TileMap : MonoBehaviour
                 checkPlayer = true;
                 // activeSpawns.Remove(spawns[goals.IndexOf(goal)]);
                 // PlayerMoved?.Invoke();
+                return true;
             }
         }
+        return false;
     }
 
     void Spawn ()

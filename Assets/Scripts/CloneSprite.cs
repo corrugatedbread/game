@@ -52,6 +52,8 @@ public class CloneSprite : MonoBehaviour
         tilemap.GetComponent<TileMap>().clonesLocation.Add(location);
         transform.position = location + new Vector3(0.5f,0.5f,0);
         oldLocation = location;
+
+        GetComponent<SpriteRenderer>().color = tilemap.GetComponent<TileMap>().colors[stage] * 0.7f;
     }
 
     void OnPlayerMoved()
@@ -90,6 +92,7 @@ public class CloneSprite : MonoBehaviour
         }
         oldLocation = location;
     }
+
 
     public void StopExisting() {
         tilemap.GetComponent<TileMap>().PlayerMoved -= OnPlayerMoved;

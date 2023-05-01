@@ -7,6 +7,8 @@ public class Player : MonoBehaviour
 {
     public Vector3 location = new Vector3(0, 0, 0);
     public Vector3 oldLocation = new Vector3(0, 0, 0);
+    public Color color = new Vector4(0, 0, 0, 1);
+    public Color oldColor = new Vector4(0, 0, 0, 1);
     public GameObject tilemap;
     public Coroutine idk;
     // Start is called before the first frame update
@@ -41,9 +43,18 @@ public class Player : MonoBehaviour
     public void Reset()
     {
         StopAllCoroutines();
-        oldLocation = tilemap.GetComponent<TileMap>().playerLocation;
         location = tilemap.GetComponent<TileMap>().playerLocation;
-        transform.position = tilemap.GetComponent<TileMap>().playerLocation + new Vector3(0.5f,0.5f,0);
+        oldLocation = location;
+        transform.position = location + new Vector3(0.5f,0.5f,0);
+        color = tilemap.GetComponent<TileMap>().colors[tilemap.GetComponent<TileMap>().currentStage] * 0.98f;
+        oldColor = color;
+        GetComponent<SpriteRenderer>().color = color;
+    }
+
+    public void ChangeColor(Color newColor)
+    {
+        color = newColor;
+        StartCoroutine(AnimateColor());
     }
 
     public IEnumerator Animate()
@@ -57,6 +68,17 @@ public class Player : MonoBehaviour
         oldLocation = location;
     }
 
+    public IEnumerator AnimateColor()
+    {
+        for (float t = 0f; t < 1f; t += 0.03f)
+        {
+            // print("animating");
+            GetComponent<SpriteRenderer>().color = Color.Lerp(oldColor, color, t);
+            yield return null;
+        }
+        oldColor = color;
+    }
+
     void OnGoalReached() {
         //doesn't work because c# is great
         // StopCoroutine(idk);
@@ -66,6 +88,7 @@ public class Player : MonoBehaviour
         location = tilemap.GetComponent<TileMap>().playerLocation;
         transform.position = location + new Vector3(0.5f,0.5f,0);
         oldLocation = location;
+        ChangeColor(tilemap.GetComponent<TileMap>().colors[tilemap.GetComponent<TileMap>().currentStage + 1] * 0.98f);
         // StartCoroutine(Animate());
     }
 }
