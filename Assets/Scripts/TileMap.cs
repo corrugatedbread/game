@@ -84,6 +84,12 @@ public class TileMap : MonoBehaviour
         } else if (Input.GetKeyDown("s") || Input.GetKeyDown(KeyCode.DownArrow))
         {
             MovePlayer(new Vector3Int(0,-1,0));
+        } else if (Input.GetKeyDown("r"))
+        {
+            Retry();
+        } else if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Menu();
         }
         // } else if (Input.GetKeyDown("r") || Input.GetKeyDown(KeyCode.RightArrow))
         // {
@@ -293,6 +299,7 @@ public class TileMap : MonoBehaviour
         // activeSpawns.Remove(firstSpawn);
         print(activeGoals.Count());
         // goals = goals.OrderBy(x => goals.FindIndex(x)).ToList();
+        UpdateUI(currentSteps, currentStage);
         doStuff = true;
     }
 
@@ -345,6 +352,7 @@ public class TileMap : MonoBehaviour
     {
         print("tilemapppp");
         checkPlayer = true;
+        UpdateUI(currentSteps, currentStage);
     }
 
     void OnGoalReached ()
@@ -393,6 +401,7 @@ public class TileMap : MonoBehaviour
 
                 activeGoals.Remove(goal);
                 checkPlayer = true;
+                UpdateUI(currentSteps, currentStage);
                 // activeSpawns.Remove(spawns[goals.IndexOf(goal)]);
                 // PlayerMoved?.Invoke();
                 return true;
@@ -409,6 +418,12 @@ public class TileMap : MonoBehaviour
         playerLocation = spawns[currentStage];
         // PlayerMoved?.Invoke();
         // }
+    }
+
+    void UpdateUI(int step,int stage)
+    {
+        GameObject.Find("Step").GetComponent<TextMeshProUGUI>().text = "Step:" + step.ToString();
+        GameObject.Find("Stage").GetComponent<TextMeshProUGUI>().text = "Stage:" + stage.ToString();
     }
 
     public void NextLevel()
