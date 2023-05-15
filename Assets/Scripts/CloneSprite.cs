@@ -11,6 +11,7 @@ public class CloneSprite : MonoBehaviour
     public int stage = 0;
     public Vector3Int location = new Vector3Int(0, 0, 0);
     Vector3 oldLocation = new Vector3(0, 0, 0);
+    Coroutine coroutineThing;
     // Start is called before the first frame update
     void Start()
     {
@@ -76,20 +77,25 @@ public class CloneSprite : MonoBehaviour
         }
         print("clone moveeee");
         //move
+        if (coroutineThing != null)
+        {
+        StopCoroutine(coroutineThing);
+        }
         location = tilemap.GetComponent<TileMap>().stepHistory[stage][tilemap.GetComponent<TileMap>().currentSteps];
         print(location);
         tilemap.GetComponent<TileMap>().clonesLocation.Add(location);
-        StartCoroutine(Animate());
+        coroutineThing = StartCoroutine(Animate());
         // transform.position = location + new Vector3(0.5f,0.5f,0);
     }
 
     IEnumerator Animate()
     {
-        for (float t = 0f; t < 1f; t += 0.05f)
+        for (float t = 0f; t <= 1f; t += 0.05f)
         {
             transform.position = Vector3.Lerp(oldLocation, location, t) + new Vector3(0.5f,0.5f,0);
             yield return null;
         }
+        transform.position = location + new Vector3(0.5f, 0.5f, 0);
         oldLocation = location;
     }
 

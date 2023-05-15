@@ -28,6 +28,9 @@ public class TileMap : MonoBehaviour
     public List<List<Vector3Int>> stepHistory = new List<List<Vector3Int>> {new List<Vector3Int> {}};
     // stepHistory[0] = List<Vector3Int> {playerLocation};
 
+    public BoundsInt bounds;
+    public TileBase[] tileArray;
+
     public event Action GoalReached;
     
     public bool checkPlayer = false;
@@ -38,6 +41,11 @@ public class TileMap : MonoBehaviour
     // public TileBase goalRed;
     public TileBase firstSpawn;
     public TileBase wallTile;
+
+    public List<TileBase> delayTiles = new List<TileBase> {};
+
+    public List<Vector3Int> delays = new List<Vector3Int> {};
+
     public Vector3Int firstSpawnLocation;
 
     public List<Vector3Int> goals = new List<Vector3Int> {};
@@ -75,21 +83,27 @@ public class TileMap : MonoBehaviour
         if (Input.GetKeyDown("a") || Input.GetKeyDown(KeyCode.LeftArrow))
         {
             MovePlayer(new Vector3Int(-1,0,0));
+            return;
         } else if (Input.GetKeyDown("d") || Input.GetKeyDown(KeyCode.RightArrow))
         {
             MovePlayer(new Vector3Int(1,0,0));
+            return;
         } else if (Input.GetKeyDown("w") || Input.GetKeyDown(KeyCode.UpArrow))
         {
             MovePlayer(new Vector3Int(0,1,0));
+            return;
         } else if (Input.GetKeyDown("s") || Input.GetKeyDown(KeyCode.DownArrow))
         {
             MovePlayer(new Vector3Int(0,-1,0));
+            return;
         } else if (Input.GetKeyDown("r"))
         {
             Retry();
+            return;
         } else if (Input.GetKeyDown(KeyCode.Escape))
         {
             Menu();
+            return;
         }
         // } else if (Input.GetKeyDown("r") || Input.GetKeyDown(KeyCode.RightArrow))
         // {
@@ -202,6 +216,9 @@ public class TileMap : MonoBehaviour
             } else if (i == 204)
             {
                 tiles.Add(goalTiles[3]);
+            } else if (i == 301)
+            {
+                tiles.Add(delayTiles[1]);
             } else
             {
                 tiles.Add(null);
@@ -218,6 +235,7 @@ public class TileMap : MonoBehaviour
     {
         spawns.Clear();
         goals.Clear();
+        delays.Clear();
         // firstSpawnLocation;
 
         BoundsInt bounds = tilemap.cellBounds;
@@ -245,22 +263,21 @@ public class TileMap : MonoBehaviour
                 {
                     goalsUnsorted.Add(new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0));
                     goalsTemp.Add(tile);
-                    // goals[goalTiles.IndexOf(tile)] = new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0);
                     print("goal found");
-                    // print(goals[0]);
 
                 } else if (tile == firstSpawn)
                 {
                     firstSpawnLocation = new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0);
-                    // spawnsUnsorted.Add(new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0));
-                    // spawnsTemp.Add(tile);
                     print("first spawn found");
                 } else if (spawnTiles.Contains(tile))
                 {
                     spawnsUnsorted.Add(new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0));
                     spawnsTemp.Add(tile);
-                    // spawns[spawnTiles.IndexOf(tile)] = new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0);
                     print("spawn found");
+                } else if (delayTiles.Contains(tile))
+                {
+                    delays.Add(new Vector3Int(bounds.position.x + x, bounds.position.y + y, 0));
+                    print("delay found");
                 } else if (tile != null)
                 {
                     Debug.Log(x + "," + y + " " + tile.name);
@@ -307,7 +324,7 @@ public class TileMap : MonoBehaviour
     void MovePlayer (Vector3Int direction)
     {
         TileBase tile = tilemap.GetTile(playerLocation + direction);
-        if (tile == null | tile == firstSpawn | goalTiles.Contains(tile) | spawnTiles.Contains(tile))
+        if (tile == null | tile == firstSpawn | goalTiles.Contains(tile) | spawnTiles.Contains(tile) | delayTiles.Contains(tile))
         // if (tilemap.GetTile(playerLocation + direction) == null || goalTiles.Contains(tilemap.GetTile(playerLocation + direction)))
         {
             currentSteps += 1;
@@ -317,6 +334,15 @@ public class TileMap : MonoBehaviour
             print(stepHistory[currentStage][currentSteps - 1]);
 
             PlayerMoved?.Invoke();
+        }
+        if (tile == delayTiles[1])
+        {
+            //move without moving
+            currentSteps += 1;
+            stepHistory[currentStage].Add(playerLocation);
+            print(stepHistory[currentStage][currentSteps - 1]);
+            PlayerMoved?.Invoke();
+            tilemap.SetTile(playerLocation, delayTiles[0]);
         }
     }
 
@@ -400,6 +426,11 @@ public class TileMap : MonoBehaviour
                 IncreaseStage();
 
                 activeGoals.Remove(goal);
+                for (int i = 0; i < delays.Count(); i++)
+                {
+                    tilemap.SetTile(delays[i], delayTiles[1]);
+                }
+                clonesLocation.Clear();
                 checkPlayer = true;
                 UpdateUI(currentSteps, currentStage);
                 // activeSpawns.Remove(spawns[goals.IndexOf(goal)]);
@@ -456,4 +487,6 @@ public class TileMap : MonoBehaviour
         GameObject.Find("Message").GetComponent<TextMeshProUGUI>().text = message;
     }
 }
+
+
 

@@ -59,12 +59,13 @@ public class Player : MonoBehaviour
 
     public IEnumerator Animate()
     {
-        for (float t = 0f; t < 1f; t += 0.05f)
+        for (float t = 0f; t <= 1f; t += 0.05f)
         {
             // print("animating");
             transform.position = Vector3.Lerp(oldLocation, location, t) + new Vector3(0.5f,0.5f,0);
             yield return null;
         }
+        transform.position = location + new Vector3(0.5f, 0.5f, 0);
         oldLocation = location;
     }
 
@@ -83,8 +84,10 @@ public class Player : MonoBehaviour
         //doesn't work because c# is great
         // StopCoroutine(idk);
         // print("stop coroutine" + idk);
-
-        StopAllCoroutines();
+        if (idk != null)
+        {
+        StopCoroutine(idk);
+        }
         location = tilemap.GetComponent<TileMap>().playerLocation;
         transform.position = location + new Vector3(0.5f,0.5f,0);
         oldLocation = location;

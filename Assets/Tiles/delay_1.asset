@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: goal_yellow
+  m_Name: delay_1
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: 21300000, guid: 79976b5c82a826f42af7515078796fb8, type: 3}
-  m_Color: {r: 0.9811321, g: 0.93567324, b: 0.32766104, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 2c042fb2c0eb59e4a8eeb78f8329dc65, type: 3}
+  m_Color: {r: 0.92767245, g: 0.6516198, b: 0.9811321, a: 1}
   m_Transform:
     e00: 1
     e01: 0
