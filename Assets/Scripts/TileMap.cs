@@ -204,6 +204,9 @@ public class TileMap : MonoBehaviour
             } else if (i == 104)
             {
                 tiles.Add(spawnTiles[3]);
+            } else if (i == 105)
+            {
+                tiles.Add(spawnTiles[4]);
             } else if (i == 201)
             {
                 tiles.Add(goalTiles[0]);
@@ -216,6 +219,9 @@ public class TileMap : MonoBehaviour
             } else if (i == 204)
             {
                 tiles.Add(goalTiles[3]);
+            } else if (i == 205)
+            {
+                tiles.Add(goalTiles[4]);
             } else if (i == 301)
             {
                 tiles.Add(delayTiles[1]);
