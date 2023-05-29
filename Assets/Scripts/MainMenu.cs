@@ -22,6 +22,11 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene("Levels");
     }
 
+    public void Help()
+    {
+        SceneManager.LoadScene("Help");
+    }
+
     public void Quit()
     {
         Application.Quit();

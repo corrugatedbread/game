@@ -65,7 +65,8 @@ public class TileMap : MonoBehaviour
         tilemap.GetComponent<TileMap>().PlayerMoved += OnPlayerMoved;
         tilemap.GetComponent<TileMap>().GoalReached += OnGoalReached;
 
-        SetMessage("");
+        GoAway();
+
         SetTiles(Persistent.levelIndex);
         LoadTiles();
         doStuff = true;
@@ -128,10 +129,11 @@ public class TileMap : MonoBehaviour
             {
                 if (playerLocation == goals[i]) {
                     print("goal reached");
-                    bool youActuallyReachedAnActiveGoalAndTheGameShouldntAnnoyYouByPrintingThatYouRanOutOfTime = DoSomethingWithTheGoal(goals[i]);
+                    bool youActuallyReachedAnActiveGoalAndWonAndTheGameShouldntAnnoyYouByPrintingThatYouRanOutOfTime = DoSomethingWithTheGoal(goals[i]);
                     // GoalReached?.Invoke();
-                    if (youActuallyReachedAnActiveGoalAndTheGameShouldntAnnoyYouByPrintingThatYouRanOutOfTime)
+                    if (youActuallyReachedAnActiveGoalAndWonAndTheGameShouldntAnnoyYouByPrintingThatYouRanOutOfTime)
                     {
+                        Win();
                         return;
                     }
                     break;
@@ -141,7 +143,8 @@ public class TileMap : MonoBehaviour
             {
                 print("you are very much very dead");
                 SetMessage("You died!");
-                doStuff = false;
+                TheOppositeOfWin();
+                // doStuff = false;
                 return;
             }
             clonesLocation.Clear();
@@ -149,7 +152,8 @@ public class TileMap : MonoBehaviour
             {
                 print("you ran out of time");
                 SetMessage("You ran out of time!");
-                doStuff = false;
+                TheOppositeOfWin();
+                // doStuff = false;
                 return;
             }
             checkPlayer = false;
@@ -402,9 +406,6 @@ public class TileMap : MonoBehaviour
         {
             if (currentStage == goals.Count() - 1)
             {
-                print("you win");
-                SetMessage("You win!");
-                doStuff = false;
                 return true;
                 
             } else if (goal != activeGoals[0])
@@ -441,7 +442,7 @@ public class TileMap : MonoBehaviour
                 UpdateUI(currentSteps, currentStage);
                 // activeSpawns.Remove(spawns[goals.IndexOf(goal)]);
                 // PlayerMoved?.Invoke();
-                return true;
+                return false;
             }
         }
         return false;
@@ -457,6 +458,62 @@ public class TileMap : MonoBehaviour
         // }
     }
 
+    void TheOppositeOfWin()
+    {
+        Coroutine panelThing = StartCoroutine(AnimatePanel(1, 0));
+        doStuff = false;
+    }
+
+    void Win()
+    {
+        totalSteps += currentSteps;
+        // idk = JsonReader.GetComponent<JsonReader>().json.scores[levelIndex].score = totalSteps;
+        int temp = 0;
+        // idk = JsonReader.GetComponent<JsonReader>().scores;
+        for(int a = 0; a < JsonReader.GetComponent<JsonReader>().scores.levels.Count; a++)
+        {
+            if (JsonReader.GetComponent<JsonReader>().scores.levels[a].name == JsonReader.GetComponent<JsonReader>().json.levels[Persistent.levelIndex].name)
+            {
+                temp = a;
+                break;
+            }
+        }
+        int whyIsThisSoAnnoying = JsonReader.GetComponent<JsonReader>().scores.levels[temp].highScore;
+
+        print(whyIsThisSoAnnoying);
+        print("you win");
+        SetMessage("You win!");
+        GameObject.Find("PB").GetComponent<TextMeshProUGUI>().text = "Previous Best: " + whyIsThisSoAnnoying;
+
+        if (JsonReader.GetComponent<JsonReader>().scores.levels[temp].highScore == 0)
+        {
+            JsonReader.GetComponent<JsonReader>().scores.levels[temp].highScore = totalSteps;
+        }
+        if (totalSteps < whyIsThisSoAnnoying)
+        {
+            JsonReader.GetComponent<JsonReader>().scores.levels[temp].highScore = totalSteps;
+        }
+        JsonReader.GetComponent<JsonReader>().SaveScore();
+
+        GameObject.Find("Score").GetComponent<TextMeshProUGUI>().text = "Total Steps: " + totalSteps;
+        // GameObject.Find("Panel").GetComponent<CanvasRenderer>().SetAlpha(1);
+        Coroutine panelThing = StartCoroutine(AnimatePanel(1, 0));
+
+        doStuff = false;
+        
+    }
+
+    public IEnumerator AnimatePanel(float color, float oldColor)
+    {
+        for (float t = 0f; t < 1f; t += 0.01f)
+        {
+            // print("animating");
+            GameObject.Find("Panel").GetComponent<CanvasRenderer>().SetAlpha(Mathf.Lerp(oldColor, color, t));
+            yield return null;
+        }
+        oldColor = color;
+    }
+
     void UpdateUI(int step,int stage)
     {
         GameObject.Find("Step").GetComponent<TextMeshProUGUI>().text = "Step:" + step.ToString();
@@ -465,9 +522,9 @@ public class TileMap : MonoBehaviour
 
     public void NextLevel()
     {
-        if (JsonReader.GetComponent<JsonReader>().json.levels.Length > Persistent.levelIndex)
+        if (JsonReader.GetComponent<JsonReader>().json.levels.Count > Persistent.levelIndex)
         {
-            SetMessage("");
+            GoAway();
             Persistent.levelIndex += 1;
             // doStuff = false;
             SetTiles(Persistent.levelIndex);
@@ -483,7 +540,7 @@ public class TileMap : MonoBehaviour
 
     public void Retry()
     {
-        SetMessage("");
+        GoAway();
         SetTiles(Persistent.levelIndex);
         LoadTiles();
     }
@@ -491,6 +548,20 @@ public class TileMap : MonoBehaviour
     public void SetMessage(string message)
     {
         GameObject.Find("Message").GetComponent<TextMeshProUGUI>().text = message;
+    }
+
+    
+
+    void GoAway()
+    {
+        SetMessage("");
+        GameObject.Find("Score").GetComponent<TextMeshProUGUI>().text = "";
+        GameObject.Find("PB").GetComponent<TextMeshProUGUI>().text = "";
+        // if(panelThing != null)
+        // {
+        //     StopCoroutine(panelThing);
+        // }
+        GameObject.Find("Panel").GetComponent<CanvasRenderer>().SetAlpha(0);
     }
 }
 

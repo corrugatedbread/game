@@ -30,7 +30,7 @@ public class Levels : MonoBehaviour
     {
         width = Screen.width;
         height = Screen.height;
-        int levelCount = JsonReader.GetComponent<JsonReader>().json.levels.Length;
+        int levelCount = JsonReader.GetComponent<JsonReader>().json.levels.Count;
         float margin = ((width % buttonWidth) + buttonWidth)/ 2;
         int row = (int)(width / buttonWidth);
 
@@ -57,7 +57,7 @@ public class Levels : MonoBehaviour
             RectTransform transform = b.GetComponent<RectTransform>();
             print(b);
             b.transform.parent = canvas.transform;
-            transform.anchoredPosition = new Vector2(buttonWidth * (i % row) + offset.x, (-buttonHeight) * Mathf.Floor(i / row) + offset.y);
+            transform.anchoredPosition = new Vector2(buttonWidth * (i % row) + offset.x, (-buttonHeight) * Mathf.Floor(i / row) + offset.y + 200);
             // cSharpIsDumb.text = i;
             b.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text = i.ToString();
             b.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>().text += "\n" + JsonReader.GetComponent<JsonReader>().json.levels[i].name;
