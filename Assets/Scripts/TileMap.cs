@@ -131,9 +131,12 @@ public class TileMap : MonoBehaviour
                     print("goal reached");
                     bool youActuallyReachedAnActiveGoalAndWonAndTheGameShouldntAnnoyYouByPrintingThatYouRanOutOfTime = DoSomethingWithTheGoal(goals[i]);
                     // GoalReached?.Invoke();
-                    if (youActuallyReachedAnActiveGoalAndWonAndTheGameShouldntAnnoyYouByPrintingThatYouRanOutOfTime)
+                    print("win thing 0 ");
+                    print(youActuallyReachedAnActiveGoalAndWonAndTheGameShouldntAnnoyYouByPrintingThatYouRanOutOfTime);
+                    if (youActuallyReachedAnActiveGoalAndWonAndTheGameShouldntAnnoyYouByPrintingThatYouRanOutOfTime == true)
                     {
                         Win();
+                        print("win thing");
                         return;
                     }
                     break;
@@ -470,7 +473,8 @@ public class TileMap : MonoBehaviour
         // idk = JsonReader.GetComponent<JsonReader>().json.scores[levelIndex].score = totalSteps;
         int temp = 0;
         // idk = JsonReader.GetComponent<JsonReader>().scores;
-        for(int a = 0; a < JsonReader.GetComponent<JsonReader>().scores.levels.Count; a++)
+        print(JsonReader.GetComponent<JsonReader>().scores.levels.Count());
+        for(int a = 0; a < JsonReader.GetComponent<JsonReader>().scores.levels.Count(); a++)
         {
             if (JsonReader.GetComponent<JsonReader>().scores.levels[a].name == JsonReader.GetComponent<JsonReader>().json.levels[Persistent.levelIndex].name)
             {

@@ -92,10 +92,11 @@ public class JsonReader : MonoBehaviour
     public void LoadScore()
     {
         scorePath = Path.Combine(Application.persistentDataPath, "scores.json");
-        if (!Directory.Exists(Path.GetDirectoryName(scorePath)))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(scorePath));
-        }
+        // if (!Directory.Exists(Path.GetDirectoryName(scorePath)))
+        // {
+        //     Directory.CreateDirectory(Path.GetDirectoryName(scorePath));
+        // }
+        File.Create(scorePath).Dispose();
         // File.WriteAllText(scorePath, "this is a test");
 
         // StreamReader reader = new StreamReader(scorePath);
